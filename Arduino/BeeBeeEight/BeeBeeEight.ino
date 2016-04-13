@@ -58,6 +58,7 @@ uint8_t motor_ids_1_3[] = { 1, 3 };
 uint8_t motor_ids_1_4[] = { 1, 4 };
 uint8_t motor_ids_2_3[] = { 2, 3 };
 uint8_t motor_ids_2_4[] = { 2, 4 };
+uint8_t motor_ids_1_2_3_4[] = { 1, 2, 3, 4 };
 
 // custom shtuff
 
@@ -148,9 +149,9 @@ void testMotors (Adafruit_DCMotor *someMotors[], uint8_t numMotors, uint8_t moto
   delay(WALBOTS_DELAY);
 }
 
-void releaseMotors (Adafruit_DCMotor *someMotors[], uint8_t numMotors, uint8_t motorIds[]) {
+void releaseMotors () {
   Serial.print("MOTORS RELEASE");
-  printMotorIds(motorIds, 
+  printMotorIds(motor_ids_1_2_3_4, 4);
 
   directMotors(motors_1_2_3_4, 4, RELEASE);
 }
@@ -232,53 +233,63 @@ void loop ()
               break;
             case 'F':
             case 'f':
-              // FORWARD
-              //releaseMotors();
-              directMotorsForward();
               //testMotors(motors_1, 1, motor_ids_1);
+              // FORWARD
+              releaseMotors();
+              directMotorsForward();
               break;
             case 'B':
             case 'b':
+              //testMotors(motors_2, 1, motor_ids_2);
               // BACKWARD
               releaseMotors();
               directMotorsBackward();
-              //testMotors(motors_2, 1, motor_ids_2);
               break;
             case 'L':
             case 'l':
+              //testMotors(motors_3, 1, motor_ids_3);
               // LEFT
               releaseMotors();
-              //testMotors(motors_3, 1, motor_ids_3);
+              directMotorsLeft();
               break;
             case 'R':
             case 'r':
-              // RIGHT
-              releaseMotors();
               //testMotors(motors_4, 1, motor_ids_4);
+              // RIGHT
+              directMotorsRight();
+              releaseMotors();
               break;
             case 'G':
             case 'g':
+              //testMotors(motors_1_3, 2, motor_ids_1_3);
               // LEFT FORWARD
               releaseMotors();
-              //testMotors(motors_1_3, 2, motor_ids_1_3);
+              directMotorsForward();
+              directMotorsLeft();
               break;
             case 'I':
             case 'i':
-              // RIGHT FORWARD
-              releaseMotors();
               //testMotors(motors_1_4, 2, motor_ids_1_4);
+              // RIGHT FORWARD
+              directMotorsForward();
+              directMotorsRight();
+              releaseMotors();
               break;
             case 'H':
             case 'h':
+              //testMotors(motors_2_3, 2, motor_ids_2_3);
               // LEFT BACKWARD
               releaseMotors();
-              //testMotors(motors_2_3, 2, motor_ids_2_3);
+              directMotorsBackward();
+              directMotorsLeft();
               break;
             case 'J':
             case 'j':
+              //testMotors(motors_2_4, 2, motor_ids_2_4);
               // RIGHT BACKWARD
               releaseMotors();
-              //testMotors(motors_2_4, 2, motor_ids_2_4);
+              directMotorsBackward();
+              directMotorsRight();
               break;
             case '0':
             case '1':
