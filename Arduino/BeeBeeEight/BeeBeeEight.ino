@@ -49,7 +49,6 @@ Adafruit_DCMotor *motors_2_4[] = { motor2, motor4 };
 Adafruit_DCMotor *motors_3_4[] = { motor3, motor4 };
 Adafruit_DCMotor *motors_1_2_3_4[] = { motor1, motor2, motor3, motor4 };
 
-
 uint8_t motor_ids_1[] = { 1 };
 uint8_t motor_ids_2[] = { 2 };
 uint8_t motor_ids_3[] = { 3 };
@@ -60,73 +59,275 @@ uint8_t motor_ids_2_3[] = { 2, 3 };
 uint8_t motor_ids_2_4[] = { 2, 4 };
 uint8_t motor_ids_1_2_3_4[] = { 1, 2, 3, 4 };
 
+int8_t forwardBackwardSpeed = 0;
+int8_t leftRightSpeed = 0;
+
 // custom shtuff
 
 #define WALBOTS_MAX_MOTORS   4
-#define WALBOTS_MAX_SPEED  255
+#define WALBOTS_MAX_SPEED  128
+#define WALBOTS_MIN_SPEED  (WALBOTS_MAX_SPEED * -1)
 #define WALBOTS_DELAY       10
 #define WALBOTS_INCREMENT    1
 
-void printMotorIds (uint8_t motorIds[], uint8_t numMotors) {
+uint8_t absolute_value (int8_t in)
+{
+  int8_t out = in;
+  uint8_t result;
+
+  if (in < 0)
+  {
+    out = in * -1;
+  }
+
+  result = (uint8_t) out;
+
+  return result;
+}
+
+void printMotorIds (uint8_t motorIds[], uint8_t numMotors)
+{
   uint8_t i;
 
-  for (i = 0; i < numMotors; i++ ) {
+  for (i = 0; i < numMotors; i++ )
+  {
     Serial.print(" ");
     Serial.print(motorIds[i]);
   }
 }
 
-void directMotors (Adafruit_DCMotor *someMotors[], uint8_t numMotors, uint8_t d) {
+void directMotors (Adafruit_DCMotor *someMotors[], uint8_t numMotors, uint8_t d)
+{
   uint8_t i;
 
-  for (i = 0; i < numMotors; i++) {
+  for (i = 0; i < numMotors; i++)
+  {
     someMotors[i]->run(d);
   }
 }
 
-void directMotorsBackward () {
+void directMotorsBackward ()
+{
   directMotors(motors_1, 1, BACKWARD);
   directMotors(motors_2, 1, FORWARD);
 }
 
-void directMotorsForward () {
+void directMotorsForward ()
+{
   directMotors(motors_1, 1, FORWARD);
   directMotors(motors_2, 1, BACKWARD);
 }
 
-void directMotorsLeft () {
+void directMotorsLeft ()
+{
   directMotors(motors_3, 1, FORWARD);
   directMotors(motors_4, 1, BACKWARD);
 }
 
-void directMotorsRight () {
+void directMotorsRight ()
+{
   directMotors(motors_3, 1, BACKWARD);
   directMotors(motors_4, 1, FORWARD);
 }
 
-void speedMotors (Adafruit_DCMotor *someMotors[], uint8_t numMotors, uint8_t s) {
+void releaseMotorsForwardBackward ()
+{
+  Serial.print("MOTORS FORWARD/BACKWARD RELEASE");
+  directMotors(motors_1_2, 2, RELEASE);
+}
+
+void releaseMotorsLeftRight ()
+{
+  Serial.print("MOTORS LEFT/RIGHT RELEASE");
+  directMotors(motors_3_4, 2, RELEASE);
+}
+
+void directMotors ()
+{
+  if (forwardBackwardSpeed > 0)
+  {
+    directMotorsForward();
+  }
+  else if (forwardBackwardSpeed < 0)
+  {
+    directMotorsBackward();
+  }
+  else
+  {
+    releaseMotorsForwardBackward();
+  }
+
+  if (leftRightSpeed > 0)
+  {
+    directMotorsRight(); 
+  }
+  else if (leftRightSpeed < 0)
+  {
+    directMotorsLeft();
+  }
+  else
+  {
+    releaseMotorsLeftRight();
+  }
+}
+
+void releaseMotors ()
+{
+  Serial.print("MOTORS ALL RELEASE");
+  printMotorIds(motor_ids_1_2_3_4, 4);
+  directMotors(motors_1_2_3_4, 4, RELEASE);
+}
+
+void speedMotors (Adafruit_DCMotor *someMotors[], uint8_t numMotors, uint8_t s)
+{
   uint8_t i;
 
-  for (i = 0; i < numMotors; i++) {
+  for (i = 0; i < numMotors; i++)
+  {
     someMotors[i]->setSpeed(s);
   }
 }
 
-void cycleMotors (Adafruit_DCMotor *someMotors[], uint8_t numMotors) {
+void speedMotors ()
+{
+  speedMotors(motors_1_2, 2, absolute_value(forwardBackwardSpeed));
+  speedMotors(motors_3_4, 2, absolute_value(leftRightSpeed));
+}
+
+int8_t increaseSpeed (int8_t someSpeed)
+{
+  int8_t result = someSpeed + WALBOTS_INCREMENT;
+
+  if (someSpeed > WALBOTS_MAX_SPEED)
+  {
+    result = WALBOTS_MAX_SPEED;
+  }
+
+  return result;
+}
+
+int8_t decreaseSpeed (int8_t someSpeed)
+{
+  int8_t result = someSpeed - WALBOTS_INCREMENT;
+
+  if (someSpeed < WALBOTS_MIN_SPEED)
+  {
+    someSpeed = WALBOTS_MIN_SPEED;
+  }
+
+  return result;
+}
+
+int8_t stillSpeed (int8_t someSpeed)
+{
+  uint8_t result;
+
+  if (someSpeed < 0)
+  {
+    result = increaseSpeed(someSpeed);
+  }
+  else if (someSpeed > 0)
+  {
+    result = decreaseSpeed(someSpeed);
+  }
+  else
+  {
+    result = 0;
+  }
+
+  return result;
+}
+
+void changeSpeed (char input)
+{
+  switch (input) {
+    case 'S':
+    case 's':
+      // STAY
+      forwardBackwardSpeed = stillSpeed(forwardBackwardSpeed);
+      leftRightSpeed = stillSpeed(leftRightSpeed);
+      break;
+    case 'F':
+    case 'f':
+      // FORWARD
+      forwardBackwardSpeed = increaseSpeed(forwardBackwardSpeed);
+      leftRightSpeed = stillSpeed(leftRightSpeed);
+      break;
+    case 'B':
+    case 'b':
+      // BACKWARD
+      forwardBackwardSpeed = decreaseSpeed(forwardBackwardSpeed);
+      leftRightSpeed = stillSpeed(leftRightSpeed);
+      break;
+    case 'L':
+    case 'l':
+      // LEFT
+      forwardBackwardSpeed = stillSpeed(forwardBackwardSpeed);
+      leftRightSpeed = decreaseSpeed(leftRightSpeed);
+      break;
+    case 'R':
+    case 'r':
+      // RIGHT
+      forwardBackwardSpeed = stillSpeed(forwardBackwardSpeed);
+      leftRightSpeed = increaseSpeed(leftRightSpeed);
+      break;
+    case 'G':
+    case 'g':
+      // LEFT FORWARD
+      forwardBackwardSpeed = increaseSpeed(forwardBackwardSpeed);
+      leftRightSpeed = decreaseSpeed(leftRightSpeed);
+      break;
+    case 'I':
+    case 'i':
+      // RIGHT FORWARD
+      forwardBackwardSpeed = increaseSpeed(forwardBackwardSpeed);
+      leftRightSpeed = increaseSpeed(leftRightSpeed);
+      break;
+    case 'H':
+    case 'h':
+      // LEFT BACKWARD
+      forwardBackwardSpeed = decreaseSpeed(forwardBackwardSpeed);
+      leftRightSpeed = decreaseSpeed(leftRightSpeed);
+      break;
+    case 'J':
+    case 'j':
+      // RIGHT BACKWARD
+      forwardBackwardSpeed = decreaseSpeed(forwardBackwardSpeed);
+      leftRightSpeed = increaseSpeed(leftRightSpeed);
+      break;
+    default:
+      Serial.print("NO SUCH DRIVE INPUT: ");
+      Serial.println(input);
+      break;
+  }
+}
+
+void driveMotors (char input)
+{
+  changeSpeed(input);
+  directMotors();
+  speedMotors();
+}
+
+void cycleMotors (Adafruit_DCMotor *someMotors[], uint8_t numMotors)
+{
   uint8_t s;
 
-  for (s = 0; s < WALBOTS_MAX_SPEED; s += WALBOTS_INCREMENT) {
+  for (s = 0; s < WALBOTS_MAX_SPEED; s += WALBOTS_INCREMENT)
+  {
     speedMotors(someMotors, numMotors, s);
     delay(WALBOTS_DELAY);
   }
 
-  for (s = WALBOTS_MAX_SPEED; s > 0; s -= WALBOTS_INCREMENT) {
+  for (s = WALBOTS_MAX_SPEED; s > 0; s -= WALBOTS_INCREMENT)
+  {
     speedMotors(someMotors, numMotors, s);
     delay(WALBOTS_DELAY);
   }
 }
 
-void testMotors (Adafruit_DCMotor *someMotors[], uint8_t numMotors, uint8_t motorIds[]) {
+void testMotors (Adafruit_DCMotor *someMotors[], uint8_t numMotors, uint8_t motorIds[])
+{
   uint8_t i;
 
   Serial.print("tick");
@@ -149,46 +350,37 @@ void testMotors (Adafruit_DCMotor *someMotors[], uint8_t numMotors, uint8_t moto
   delay(WALBOTS_DELAY);
 }
 
-void releaseMotors () {
-  Serial.print("MOTORS RELEASE");
-  printMotorIds(motor_ids_1_2_3_4, 4);
-
-  directMotors(motors_1_2_3_4, 4, RELEASE);
-}
-
 int getTemp ()
 {
-    int a = analogRead(PIN_TEMP);
-    int B=3975;
-    float resistance = (float)(1023-a)*10000/a;
-    float temperature = temperature=1/(log(resistance/10000)/B+1/298.15)-273.15;
-    
-    return (int)temperature;
-    
+  int a = analogRead(PIN_TEMP);
+  int B=3975;
+  float resistance = (float)(1023-a)*10000/a;
+  float temperature = temperature=1/(log(resistance/10000)/B+1/298.15)-273.15;
+
+  return (int)temperature;
 }
 
 void setupBlueToothConnection ()
-{          
-  blueToothSerial.begin(9600);  
-  
-  blueToothSerial.print("AT\r\n");
-  delay(400); 
+{
+  blueToothSerial.begin(9600);
 
-  blueToothSerial.print("AT+DEFAULT\r\n");             // Restore all setup value to factory setup
-  delay(2000); 
-  
-  blueToothSerial.print("AT+NAMESeeedBTSlave\r\n");    // set the bluetooth name as "SeeedBTSlave" ,the length of bluetooth name must less than 12 characters.
+  blueToothSerial.print("AT\r\n");
   delay(400);
-  
-  blueToothSerial.print("AT+PIN0000\r\n");             // set the pair code to connect 
+
+  blueToothSerial.print("AT+DEFAULT\r\n");          // Restore all setup value to factory setup
+  delay(2000);
+
+  blueToothSerial.print("AT+NAMESeeedBTSlave\r\n"); // set the bluetooth name as "SeeedBTSlave" ,the length of bluetooth name must less than 12 characters.
   delay(400);
-  
-  blueToothSerial.print("AT+AUTH1\r\n");             //
-  delay(400);    
+
+  blueToothSerial.print("AT+PIN0000\r\n");          // set the pair code to connect
+  delay(400);
+
+  blueToothSerial.print("AT+AUTH1\r\n");            //
+  delay(400);
 
   blueToothSerial.flush();
 }
-
 
 // lifecycle shtuff
 
@@ -198,15 +390,13 @@ void setup ()
   pinMode(RxD, INPUT);
   pinMode(TxD, OUTPUT);
 
-  Serial.println("RCCarWhassup");
+  Serial.println("BeeBeeEight");
   Serial.println("setting up bluetooth");
   setupBlueToothConnection();
   Serial.println("done setting up bluetooth");
 
-
-
-  AFMS.begin();  // create with the default frequency 1.6KHz
-  //AFMS.begin(1000);  // OR with a different frequency, say 1KHz
+  AFMS.begin();       // create with the default frequency 1.6KHz
+  //AFMS.begin(1000); // OR with a different frequency, say 1KHz
 }
 
 void loop ()
@@ -215,113 +405,76 @@ void loop ()
 
   while (1)
   {
-      if (blueToothSerial.available())
-      {//check if there's any data sent from the remote bluetooth shield
-          recvChar = blueToothSerial.read();
+    if (blueToothSerial.available())
+    {
+      // Check if there's any data sent from the remote bluetooth shield.
 
-          Serial.print("received: ");
+      recvChar = blueToothSerial.read();
+
+      // Log what we got.
+
+      Serial.print("received: ");
+      Serial.println(recvChar);
+      blueToothSerial.print("received: ");
+      blueToothSerial.println(recvChar);
+
+      // Process what we got.
+
+      switch (recvChar)
+      {
+        case 'S': // STAY
+        case 's':
+        case 'F': // FORWARD
+        case 'f':
+        case 'B': // BACKWARD
+        case 'b':
+        case 'L': // LEFT
+        case 'l':
+        case 'R': // RIGHT
+        case 'r':
+        case 'G': // LEFT FORWARD
+        case 'g':
+        case 'I': // RIGHT FORWARD
+        case 'i':
+        case 'H': // LEFT BACKWARD
+        case 'h':
+        case 'J': // RIGHT BACKWARD
+        case 'j':
+          driveMotors(recvChar);
+          break;
+
+        case '0': // slider values
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+        case '7':
+        case '8':
+        case '9':
+        case 'q':
+          break;
+
+        default:
+          Serial.print("UNHANDLED INPUT: ");
           Serial.println(recvChar);
-          blueToothSerial.print("received: ");
-          blueToothSerial.println(recvChar);
-
-//RDW FIXME need to ignore input while "action" is happening
-          switch (recvChar) {
-            case 'S':
-            case 's':
-              // STAY
-              releaseMotors();
-              break;
-            case 'F':
-            case 'f':
-              //testMotors(motors_1, 1, motor_ids_1);
-              // FORWARD
-              releaseMotors();
-              directMotorsForward();
-              break;
-            case 'B':
-            case 'b':
-              //testMotors(motors_2, 1, motor_ids_2);
-              // BACKWARD
-              releaseMotors();
-              directMotorsBackward();
-              break;
-            case 'L':
-            case 'l':
-              //testMotors(motors_3, 1, motor_ids_3);
-              // LEFT
-              releaseMotors();
-              directMotorsLeft();
-              break;
-            case 'R':
-            case 'r':
-              //testMotors(motors_4, 1, motor_ids_4);
-              // RIGHT
-              directMotorsRight();
-              releaseMotors();
-              break;
-            case 'G':
-            case 'g':
-              //testMotors(motors_1_3, 2, motor_ids_1_3);
-              // LEFT FORWARD
-              releaseMotors();
-              directMotorsForward();
-              directMotorsLeft();
-              break;
-            case 'I':
-            case 'i':
-              //testMotors(motors_1_4, 2, motor_ids_1_4);
-              // RIGHT FORWARD
-              directMotorsForward();
-              directMotorsRight();
-              releaseMotors();
-              break;
-            case 'H':
-            case 'h':
-              //testMotors(motors_2_3, 2, motor_ids_2_3);
-              // LEFT BACKWARD
-              releaseMotors();
-              directMotorsBackward();
-              directMotorsLeft();
-              break;
-            case 'J':
-            case 'j':
-              //testMotors(motors_2_4, 2, motor_ids_2_4);
-              // RIGHT BACKWARD
-              releaseMotors();
-              directMotorsBackward();
-              directMotorsRight();
-              break;
-            case '0':
-            case '1':
-            case '2':
-            case '3':
-            case '4':
-            case '5':
-            case '6':
-            case '7':
-            case '8':
-            case '9':
-            case 'q':
-              // slider values
-              break;
-            default:
-              Serial.print("unhandled: ");
-              Serial.println(recvChar);
-              break;
-          }
-              
-          
-//          if(recvChar == 't' || recvChar == 'T')
-//          {
-//              blueToothSerial.print("temperature: ");
-//              blueToothSerial.println(getTemp());
-//          }
+          break;
       }
-//      if(Serial.available())
-//      {//check if there's any data sent from t he local serial terminal, you can add the other applications here
-//          recvChar  = Serial.read();
-//          blueToothSerial.print(recvChar);
+
+//      if (recvChar == 't' || recvChar == 'T')
+//      {
+//          blueToothSerial.print("temperature: ");
+//          blueToothSerial.println(getTemp());
 //      }
+    }
+//    if (Serial.available())
+//    {
+//      // Check if there's any data sent from the local serial terminal.
+//      // You can add the other applications here.
+//      recvChar = Serial.read();
+//      blueToothSerial.print(recvChar);
+//    }
   }
 }
 
