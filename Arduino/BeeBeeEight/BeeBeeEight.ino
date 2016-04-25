@@ -59,25 +59,28 @@ uint8_t motor_ids_2_3[] = { 2, 3 };
 uint8_t motor_ids_2_4[] = { 2, 4 };
 uint8_t motor_ids_1_2_3_4[] = { 1, 2, 3, 4 };
 
-int8_t forwardBackwardSpeed = 0;
-int8_t leftRightSpeed = 0;
+int16_t forwardBackwardSpeed = 0;
+int16_t leftRightSpeed = 0;
+
+int16_t lastForwardBackwardSpeed = 0;
+int16_t lastLeftRightSpeed = 0;
 
 // custom shtuff
 
 #define WALBOTS_MAX_MOTORS   4
 #define WALBOTS_MAX_SPEED  128
-#define WALBOTS_MIN_SPEED  (WALBOTS_MAX_SPEED * -1)
+#define WALBOTS_MIN_SPEED  -WALBOTS_MAX_SPEED
 #define WALBOTS_DELAY       10
-#define WALBOTS_INCREMENT    1
+#define WALBOTS_INCREMENT    3
 
-uint8_t absolute_value (int8_t in)
+uint8_t absolute_value (int16_t in)
 {
   int8_t out = in;
   uint8_t result;
 
   if (in < 0)
   {
-    out = in * -1;
+    out = -in;
   }
 
   result = (uint8_t) out;
@@ -89,7 +92,7 @@ void printMotorIds (uint8_t motorIds[], uint8_t numMotors)
 {
   uint8_t i;
 
-  for (i = 0; i < numMotors; i++ )
+  for (i = 0; i < numMotors; i++)
   {
     Serial.print(" ");
     Serial.print(motorIds[i]);
@@ -190,7 +193,23 @@ void speedMotors (Adafruit_DCMotor *someMotors[], uint8_t numMotors, uint8_t s)
 
 void speedMotors ()
 {
+  if (lastForwardBackwardSpeed != forwardBackwardSpeed)
+  {
+    Serial.print("FWD/BCK SPEED: ");
+    Serial.print(forwardBackwardSpeed);
+    Serial.print(" ABS: ");
+    Serial.println(absolute_value(forwardBackwardSpeed));
+    lastForwardBackwardSpeed = forwardBackwardSpeed;
+  }
   speedMotors(motors_1_2, 2, absolute_value(forwardBackwardSpeed));
+  if (lastLeftRightSpeed != leftRightSpeed)
+  {
+    Serial.print("LT/RT SPEED: ");
+    Serial.print(leftRightSpeed);
+    Serial.print(" ABS: ");
+    Serial.println(absolute_value(leftRightSpeed));
+    lastLeftRightSpeed = leftRightSpeed;
+  }
   speedMotors(motors_3_4, 2, absolute_value(leftRightSpeed));
 }
 
