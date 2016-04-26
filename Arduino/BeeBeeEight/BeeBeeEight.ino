@@ -75,12 +75,24 @@ int16_t lastLeftRightSpeed = 0;
 
 uint8_t absolute_value (int16_t in)
 {
-  int8_t out = in;
+  int16_t out = in;
   uint8_t result;
 
   if (in < 0)
   {
     out = -in;
+  }
+
+  if (out < 0)
+  {
+    Serial.print("BOGUS ABSOLUTE VALUE: ");
+    Serial.println(out);
+  }
+
+  if (out > WALBOTS_MAX_SPEED)
+  {
+    Serial.print("SPEED OUT OF BOUNDS: ");
+    Serial.println(out);
   }
 
   result = (uint8_t) out;
@@ -135,13 +147,13 @@ void directMotorsRight ()
 
 void releaseMotorsForwardBackward ()
 {
-  Serial.print("MOTORS FORWARD/BACKWARD RELEASE");
+  Serial.println("MOTORS FORWARD/BACKWARD RELEASE");
   directMotors(motors_1_2, 2, RELEASE);
 }
 
 void releaseMotorsLeftRight ()
 {
-  Serial.print("MOTORS LEFT/RIGHT RELEASE");
+  Serial.println("MOTORS LEFT/RIGHT RELEASE");
   directMotors(motors_3_4, 2, RELEASE);
 }
 
@@ -176,7 +188,7 @@ void directMotors ()
 
 void releaseMotors ()
 {
-  Serial.print("MOTORS ALL RELEASE");
+  Serial.println("MOTORS ALL RELEASE");
   printMotorIds(motor_ids_1_2_3_4, 4);
   directMotors(motors_1_2_3_4, 4, RELEASE);
 }
@@ -196,7 +208,7 @@ void speedMotors ()
   if (lastForwardBackwardSpeed != forwardBackwardSpeed)
   {
     Serial.print("FWD/BCK SPEED: ");
-    Serial.print(forwardBackwardSpeed);
+    Serial.println(forwardBackwardSpeed);
     Serial.print(" ABS: ");
     Serial.println(absolute_value(forwardBackwardSpeed));
     lastForwardBackwardSpeed = forwardBackwardSpeed;
@@ -205,7 +217,7 @@ void speedMotors ()
   if (lastLeftRightSpeed != leftRightSpeed)
   {
     Serial.print("LT/RT SPEED: ");
-    Serial.print(leftRightSpeed);
+    Serial.println(leftRightSpeed);
     Serial.print(" ABS: ");
     Serial.println(absolute_value(leftRightSpeed));
     lastLeftRightSpeed = leftRightSpeed;
@@ -213,9 +225,9 @@ void speedMotors ()
   speedMotors(motors_3_4, 2, absolute_value(leftRightSpeed));
 }
 
-int8_t increaseSpeed (int8_t someSpeed)
+int16_t increaseSpeed (int16_t someSpeed)
 {
-  int8_t result = someSpeed + WALBOTS_INCREMENT;
+  int16_t result = someSpeed + WALBOTS_INCREMENT;
 
   if (someSpeed > WALBOTS_MAX_SPEED)
   {
@@ -225,9 +237,9 @@ int8_t increaseSpeed (int8_t someSpeed)
   return result;
 }
 
-int8_t decreaseSpeed (int8_t someSpeed)
+int16_t decreaseSpeed (int16_t someSpeed)
 {
-  int8_t result = someSpeed - WALBOTS_INCREMENT;
+  int16_t result = someSpeed - WALBOTS_INCREMENT;
 
   if (someSpeed < WALBOTS_MIN_SPEED)
   {
@@ -237,9 +249,9 @@ int8_t decreaseSpeed (int8_t someSpeed)
   return result;
 }
 
-int8_t stillSpeed (int8_t someSpeed)
+int16_t stillSpeed (int16_t someSpeed)
 {
-  uint8_t result;
+  int16_t result;
 
   if (someSpeed < 0)
   {
@@ -405,7 +417,7 @@ void setupBlueToothConnection ()
 
 void setup ()
 {
-  Serial.begin(9600);
+  Serial.begin(250000);
   pinMode(RxD, INPUT);
   pinMode(TxD, OUTPUT);
 
@@ -432,10 +444,10 @@ void loop ()
 
       // Log what we got.
 
-      Serial.print("received: ");
-      Serial.println(recvChar);
-      blueToothSerial.print("received: ");
-      blueToothSerial.println(recvChar);
+      //Serial.print("received: ");
+      //Serial.println(recvChar);
+      //blueToothSerial.print("received: ");
+      //blueToothSerial.println(recvChar);
 
       // Process what we got.
 
@@ -476,8 +488,8 @@ void loop ()
           break;
 
         default:
-          Serial.print("UNHANDLED INPUT: ");
-          Serial.println(recvChar);
+          //Serial.print("UNHANDLED INPUT: ");
+          //Serial.println(recvChar);
           break;
       }
 
