@@ -1,19 +1,31 @@
 // Bluetooth shtuff
 
 #include <SoftwareSerial.h>   //Software Serial Port
-#define RxD 3
-#define TxD 2
+
+// custom constants
 
 #define DEBUG_ENABLED  1
 
 #define PIN_TEMP    A5
 
-SoftwareSerial blueToothSerial(RxD,TxD);
+#define RxD 3
+#define TxD 2
 
+#define WALBOTS_DELAY            10
+#define WALBOTS_HEAD_SERVO_RANGE 180
+#define WALBOTS_HEAD_DEFAULT     (WALBOTS_HEAD_SERVO_RANGE / 2)
+#define WALBOTS_HEAD_INCREMENT   (WALBOTS_HEAD_SERVO_RANGE / 10)
+#define WALBOTS_INCREMENT        3
+#define WALBOTS_MAX_MOTORS       4
+#define WALBOTS_MAX_SPEED        128
+#define WALBOTS_MIN_SPEED        -WALBOTS_MAX_SPEED
+
+SoftwareSerial blueToothSerial(RxD,TxD);
 
 // Motor shtuff
 
 #include <Wire.h>
+#include <Servo.h>
 #include <Adafruit_MotorShield.h>
 #include "utility/Adafruit_MS_PWMServoDriver.h"
 
@@ -49,6 +61,8 @@ Adafruit_DCMotor *motors_2_4[] = { motor2, motor4 };
 Adafruit_DCMotor *motors_3_4[] = { motor3, motor4 };
 Adafruit_DCMotor *motors_1_2_3_4[] = { motor1, motor2, motor3, motor4 };
 
+Servo servoHead;
+
 uint8_t motor_ids_1[] = { 1 };
 uint8_t motor_ids_2[] = { 2 };
 uint8_t motor_ids_3[] = { 3 };
@@ -65,13 +79,7 @@ int16_t leftRightSpeed = 0;
 int16_t lastForwardBackwardSpeed = 0;
 int16_t lastLeftRightSpeed = 0;
 
-// custom shtuff
-
-#define WALBOTS_MAX_MOTORS   4
-#define WALBOTS_MAX_SPEED  128
-#define WALBOTS_MIN_SPEED  -WALBOTS_MAX_SPEED
-#define WALBOTS_DELAY       10
-#define WALBOTS_INCREMENT    3
+int16_t headPosition = WALBOTS_HEAD_DEFAULT;
 
 uint8_t absolute_value (int16_t in)
 {
@@ -381,6 +389,27 @@ void testMotors (Adafruit_DCMotor *someMotors[], uint8_t numMotors, uint8_t moto
   delay(WALBOTS_DELAY);
 }
 
+void turnHead (char recvChar)
+{
+  char charToUse = recvChar;
+  uint8_t charValue;
+
+  if (charToUse == 'q')
+  {
+    charToUse = '0';
+  }
+
+  charValue = charToUse - 48;
+
+  Serial.print("HD VALUE: ");
+  Serial.println(charValue);
+
+  Serial.print("HD POSITION: ");
+  Serial.println(charValue * WALBOTS_HEAD_INCREMENT);
+
+  servoHead.write(charValue * WALBOTS_HEAD_INCREMENT);
+}
+
 int getTemp ()
 {
   int a = analogRead(PIN_TEMP);
@@ -425,6 +454,12 @@ void setup ()
   Serial.println("setting up bluetooth");
   setupBlueToothConnection();
   Serial.println("done setting up bluetooth");
+
+  // The Servo_1 and Servo_2 ports on the Adafruit MotorShield are just pins 9 and 10, respectively,
+  // from the main Arduino board wired through to two different 3-pin ports (1 control pin, and +/- power pins).
+
+  servoHead.attach(9);    // Servo_1
+  servoHead.write(WALBOTS_HEAD_DEFAULT);
 
   AFMS.begin();       // create with the default frequency 1.6KHz
   //AFMS.begin(1000); // OR with a different frequency, say 1KHz
@@ -485,6 +520,7 @@ void loop ()
         case '8':
         case '9':
         case 'q':
+          turnHead(recvChar);
           break;
 
         default:
