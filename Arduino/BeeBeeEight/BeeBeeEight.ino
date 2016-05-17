@@ -73,14 +73,15 @@ uint8_t motor_ids_2_3[] = { 2, 3 };
 uint8_t motor_ids_2_4[] = { 2, 4 };
 uint8_t motor_ids_1_2_3_4[] = { 1, 2, 3, 4 };
 
+int16_t headPosition = WALBOTS_HEAD_DEFAULT;
+
+char lastRecvChar = 0;
+
 int16_t forwardBackwardSpeed = 0;
 int16_t leftRightSpeed = 0;
 
-char lastRecvChar = 0;
 int16_t lastForwardBackwardSpeed = 0;
 int16_t lastLeftRightSpeed = 0;
-
-int16_t headPosition = WALBOTS_HEAD_DEFAULT;
 
 uint8_t absolute_value (int16_t in)
 {
