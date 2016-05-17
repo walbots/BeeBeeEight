@@ -76,6 +76,7 @@ uint8_t motor_ids_1_2_3_4[] = { 1, 2, 3, 4 };
 int16_t forwardBackwardSpeed = 0;
 int16_t leftRightSpeed = 0;
 
+char lastRecvChar = 0;
 int16_t lastForwardBackwardSpeed = 0;
 int16_t lastLeftRightSpeed = 0;
 
@@ -155,13 +156,21 @@ void directMotorsRight ()
 
 void releaseMotorsForwardBackward ()
 {
-  Serial.println("MOTORS FORWARD/BACKWARD RELEASE");
+  if (lastForwardBackwardSpeed != forwardBackwardSpeed)
+  {
+    Serial.println("MOTORS FORWARD/BACKWARD RELEASE");
+  }
+
   directMotors(motors_1_2, 2, RELEASE);
 }
 
 void releaseMotorsLeftRight ()
 {
-  Serial.println("MOTORS LEFT/RIGHT RELEASE");
+  if (lastLeftRightSpeed != leftRightSpeed)
+  {
+    Serial.println("MOTORS LEFT/RIGHT RELEASE");
+  }
+
   directMotors(motors_3_4, 2, RELEASE);
 }
 
@@ -182,7 +191,7 @@ void directMotors ()
 
   if (leftRightSpeed > 0)
   {
-    directMotorsRight(); 
+    directMotorsRight();
   }
   else if (leftRightSpeed < 0)
   {
@@ -216,20 +225,23 @@ void speedMotors ()
   if (lastForwardBackwardSpeed != forwardBackwardSpeed)
   {
     Serial.print("FWD/BCK SPEED: ");
-    Serial.println(forwardBackwardSpeed);
+    Serial.print(forwardBackwardSpeed);
     Serial.print(" ABS: ");
     Serial.println(absolute_value(forwardBackwardSpeed));
     lastForwardBackwardSpeed = forwardBackwardSpeed;
   }
+
   speedMotors(motors_1_2, 2, absolute_value(forwardBackwardSpeed));
+
   if (lastLeftRightSpeed != leftRightSpeed)
   {
     Serial.print("LT/RT SPEED: ");
-    Serial.println(leftRightSpeed);
+    Serial.print(leftRightSpeed);
     Serial.print(" ABS: ");
     Serial.println(absolute_value(leftRightSpeed));
     lastLeftRightSpeed = leftRightSpeed;
   }
+
   speedMotors(motors_3_4, 2, absolute_value(leftRightSpeed));
 }
 
@@ -479,10 +491,15 @@ void loop ()
 
       // Log what we got.
 
-      //Serial.print("received: ");
-      //Serial.println(recvChar);
-      //blueToothSerial.print("received: ");
-      //blueToothSerial.println(recvChar);
+      if (lastRecvChar != recvChar)
+      {
+        Serial.print("received: ");
+        Serial.println(recvChar);
+        blueToothSerial.print("received: ");
+        blueToothSerial.println(recvChar);
+      }
+
+      lastRecvChar = recvChar;
 
       // Process what we got.
 
