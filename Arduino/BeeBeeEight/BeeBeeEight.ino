@@ -49,28 +49,28 @@ Adafruit_DCMotor *motor4 = AFMS.getMotor(4); //M4
 // Each motor-pair will act in concert, with the directions for the motors in opposition (because their mount orientations are mirrored).
 // Omniwheels are necessary to avoid drag in this situation.
 
-Adafruit_DCMotor *motors_1[]   = { motor1 };
-Adafruit_DCMotor *motors_2[]   = { motor2 };
-Adafruit_DCMotor *motors_3[]   = { motor3 };
-Adafruit_DCMotor *motors_4[]   = { motor4 };
-Adafruit_DCMotor *motors_1_2[] = { motor1, motor2 };
-Adafruit_DCMotor *motors_1_3[] = { motor1, motor3 };
-Adafruit_DCMotor *motors_1_4[] = { motor1, motor4 };
-Adafruit_DCMotor *motors_2_3[] = { motor2, motor3 };
-Adafruit_DCMotor *motors_2_4[] = { motor2, motor4 };
-Adafruit_DCMotor *motors_3_4[] = { motor3, motor4 };
+Adafruit_DCMotor *motors_1[]       = { motor1 };
+Adafruit_DCMotor *motors_2[]       = { motor2 };
+Adafruit_DCMotor *motors_3[]       = { motor3 };
+Adafruit_DCMotor *motors_4[]       = { motor4 };
+Adafruit_DCMotor *motors_1_2[]     = { motor1, motor2 };
+Adafruit_DCMotor *motors_1_3[]     = { motor1, motor3 };
+Adafruit_DCMotor *motors_1_4[]     = { motor1, motor4 };
+Adafruit_DCMotor *motors_2_3[]     = { motor2, motor3 };
+Adafruit_DCMotor *motors_2_4[]     = { motor2, motor4 };
+Adafruit_DCMotor *motors_3_4[]     = { motor3, motor4 };
 Adafruit_DCMotor *motors_1_2_3_4[] = { motor1, motor2, motor3, motor4 };
 
 Servo servoHead;
 
-uint8_t motor_ids_1[] = { 1 };
-uint8_t motor_ids_2[] = { 2 };
-uint8_t motor_ids_3[] = { 3 };
-uint8_t motor_ids_4[] = { 4 };
-uint8_t motor_ids_1_3[] = { 1, 3 };
-uint8_t motor_ids_1_4[] = { 1, 4 };
-uint8_t motor_ids_2_3[] = { 2, 3 };
-uint8_t motor_ids_2_4[] = { 2, 4 };
+uint8_t motor_ids_1[]       = { 1 };
+uint8_t motor_ids_2[]       = { 2 };
+uint8_t motor_ids_3[]       = { 3 };
+uint8_t motor_ids_4[]       = { 4 };
+uint8_t motor_ids_1_3[]     = { 1, 3 };
+uint8_t motor_ids_1_4[]     = { 1, 4 };
+uint8_t motor_ids_2_3[]     = { 2, 3 };
+uint8_t motor_ids_2_4[]     = { 2, 4 };
 uint8_t motor_ids_1_2_3_4[] = { 1, 2, 3, 4 };
 
 int16_t headPosition = WALBOTS_HEAD_DEFAULT;
