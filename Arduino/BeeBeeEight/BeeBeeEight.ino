@@ -223,27 +223,32 @@ void speedMotors (Adafruit_DCMotor *someMotors[], uint8_t numMotors, uint8_t s)
 
 void speedMotors ()
 {
+  uint8_t forwardBackwardSpeed_absolute = absolute_value(forwardBackwardSpeed);
+  uint8_t leftRightSpeed_absolute = absolute_value(leftRightSpeed);
+
   if (lastForwardBackwardSpeed != forwardBackwardSpeed)
   {
+    lastForwardBackwardSpeed = forwardBackwardSpeed;
+
     Serial.print("FWD/BCK SPEED: ");
     Serial.print(forwardBackwardSpeed);
     Serial.print(" ABS: ");
-    Serial.println(absolute_value(forwardBackwardSpeed));
-    lastForwardBackwardSpeed = forwardBackwardSpeed;
+    Serial.println(forwardBackwardSpeed_absolute);
   }
 
-  speedMotors(motors_1_2, 2, absolute_value(forwardBackwardSpeed));
+  speedMotors(motors_1_2, 2, forwardBackwardSpeed_absolute);
 
   if (lastLeftRightSpeed != leftRightSpeed)
   {
+    lastLeftRightSpeed = leftRightSpeed;
+
     Serial.print("LT/RT SPEED: ");
     Serial.print(leftRightSpeed);
     Serial.print(" ABS: ");
-    Serial.println(absolute_value(leftRightSpeed));
-    lastLeftRightSpeed = leftRightSpeed;
+    Serial.println(leftRightSpeed_absolute);
   }
 
-  speedMotors(motors_3_4, 2, absolute_value(leftRightSpeed));
+  speedMotors(motors_3_4, 2, leftRightSpeed_absolute);
 }
 
 int16_t increaseSpeed (int16_t someSpeed)
