@@ -255,7 +255,7 @@ int16_t increaseSpeed (int16_t someSpeed)
 {
   int16_t result = someSpeed + WALBOTS_INCREMENT;
 
-  if (someSpeed > WALBOTS_MAX_SPEED)
+  if (result > WALBOTS_MAX_SPEED)
   {
     result = WALBOTS_MAX_SPEED;
   }
@@ -267,9 +267,9 @@ int16_t decreaseSpeed (int16_t someSpeed)
 {
   int16_t result = someSpeed - WALBOTS_INCREMENT;
 
-  if (someSpeed < WALBOTS_MIN_SPEED)
+  if (result < WALBOTS_MIN_SPEED)
   {
-    someSpeed = WALBOTS_MIN_SPEED;
+    result = WALBOTS_MIN_SPEED;
   }
 
   return result;
@@ -277,15 +277,15 @@ int16_t decreaseSpeed (int16_t someSpeed)
 
 int16_t stillSpeed (int16_t someSpeed)
 {
-  int16_t result;
+  int16_t result = someSpeed;
 
-  if (someSpeed < 0)
+  if (result < 0)
   {
-    result = increaseSpeed(someSpeed);
+    result = increaseSpeed(result);
   }
-  else if (someSpeed > 0)
+  else if (result > 0)
   {
-    result = decreaseSpeed(someSpeed);
+    result = decreaseSpeed(result);
   }
   else
   {
